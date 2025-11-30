@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auslaufende Sozialbindungen in Berlin</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* Tab Navigation */
+        .tab-navigation {
+            display: flex;
+            border-bottom: 3px solid #e0e0e0;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+            gap: 0.5rem;
+        }
+
+        .tab-button {
+            padding: 1rem 2rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -3px;
+            white-space: nowrap;
+        }
+
+        .tab-button:hover {
+            color: #667eea;
+            background: #f8f9fa;
+        }
+
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Intro Section */
+        .intro {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .intro h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        /* Map Section */
+        .map-section h2 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .filter-controls {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+
+        .filter-group select {
+            padding: 0.5rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 1rem;
+            min-width: 200px;
+        }
+
+        .filter-group button {
+            padding: 0.5rem 1.5rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+
+        .filter-group button:hover {
+            background: #5568d3;
+        }
+
+        #map {
+            height: 600px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Info Sections */
+        .info-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 2rem 0;
+        }
+
+        .info-section h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .info-section h3 {
+            color: #333;
+            margin: 1.5rem 0 1rem 0;
+        }
+
+        .info-section ul {
+            margin-left: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .info-section li {
+            margin: 0.5rem 0;
+        }
+
+        .info-section a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .info-section a:hover {
+            text-decoration: underline;
+        }
+
+        /* Bezirk Cards */
+        .bezirk-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .bezirk-card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .bezirk-card h3 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Contact Form */
+        .contact-form {
+            max-width: 600px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .submit-button {
+            background: #667eea;
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .submit-button:hover {
+            background: #5568d3;
+        }
+
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-top: 3rem;
+        }
+
+        /* Leaflet Popup */
+        .leaflet-popup-content h3 {
+            margin: 0 0 0.5rem 0;
+            color: #667eea;
+        }
+
+        .leaflet-popup-content p {
+            margin: 0.25rem 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            .tab-button {
+                padding: 0.75rem 1rem;
+                font-size: 0.95rem;
+            }
+
+            .filter-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-group select,
+            .filter-group button {
+                width: 100%;
+            }
+
+            #map {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Auslaufende Sozialbindungen in Berlin</h1>
+        <p>Informationen für Mieter*innen über gefährdeten bezahlbaren Wohnraum</p>
+    </header>
+
+    <div class="container">
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <button class="tab-button active" onclick="openTab('uebersicht')">Übersicht</button>
+            <button class="tab-button" onclick="openTab('karte')">Interaktive Karte</button>
+            <button class="tab-button" onclick="openTab('bezirke')">Betroffene Bezirke</button>
+            <button class="tab-button" onclick="openTab('hilfe')">Hilfe & Beratung</button>
+            <button class="tab-button" onclick="openTab('kontakt')">Kontakt</button>
+        </div>
+
+        <!-- Tab: Übersicht -->
+        <div id="uebersicht" class="tab-content active">
+            <div class="intro">
+                <h2>Was sind Sozialbindungen?</h2>
+                <p>Sozialbindungen verpflichten Eigentümer*innen, Wohnungen zu günstigen Mieten anzubieten. Wenn diese Bindungen auslaufen, können die Mieten deutlich steigen. In Berlin sind in den kommenden Jahren tausende Wohnungen betroffen.</p>
+                <p style="margin-top: 1rem;">Diese Webseite zeigt, wo in Berlin Sozialbindungen auslaufen und bietet Informationen für betroffene Mieter*innen.</p>
+            </div>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-units">---</div>
+                    <div class="stat-label">Betroffene Wohnungen</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="total-locations">---</div>
+                    <div class="stat-label">Standorte</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="next-expiry">---</div>
+                    <div class="stat-label">Nächstes Auslaufen</div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h2>Warum ist das wichtig?</h2>
+                <p>Der Verlust von Sozialbindungen führt zu:</p>
+                <ul>
+                    <li>Drastischen Mieterhöhungen für betroffene Haushalte</li>
+                    <li>Verdrängung von Mieter*innen aus ihren Kiezen</li>
+                    <li>Weiterer Verknappung von bezahlbarem Wohnraum</li>
+                    <li>Verschärfung der Wohnungskrise in Berlin</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tab: Karte -->
+        <div id="karte" class="tab-content">
+            <div class="map-section">
+                <h2>Wo laufen Sozialbindungen aus?</h2>
+                <p style="margin-bottom: 1rem;">Klicken Sie auf die Marker für Details. Nutzen Sie die Filter, um nach Jahr oder Eigentümer zu suchen.</p>
+                
+                <div class="filter-controls">
+                    <div class="filter-group">
+                        <label for="year-filter">Jahr des Bindungsendes:</label>
+                        <select id="year-filter">
+                            <option value="all">Alle Jahre</option>
+                        </select>
+
+                        <label for="owner-filter">Eigentümer:</label>
+                        <select id="owner-filter">
+                            <option value="all">Alle Eigentümer</option>
+                        </select>
+
+                        <button onclick="resetFilters()">Filter zurücksetzen</button>
+                    </div>
+                </div>
+                <div id="map"></div>
+            </div>
+        </div>
+
+        <!-- Tab: Bezirke -->
+        <div id="bezirke" class="tab-content">
+            <div class="info-section">
+                <h2>Betroffene Bezirke</h2>
+                <p>Hier finden Sie Informationen zu den am stärksten betroffenen Berliner Bezirken.</p>
+                
+                <div class="bezirk-grid">
+                    <div class="bezirk-card">
+                        <h3>Mitte</h3>
+                        <p><strong>Betroffene Wohnungen:</strong> 45</p>
+                        <p><strong>Kritischstes Auslaufen:</strong> 2025</p>
+                        <p>Besonders betroffen sind Gebiete um die Müllerstraße und Wedding.</p>
+                    </div>
+                    
+                    <div class="bezirk-card">
+                        <h3>Neukölln</h3>
+                        <p><strong>Betroffene Wohnungen:</strong> 78</p>
+                        <p><strong>Kritischstes Auslaufen:</strong> 2026</p>
+                        <p>Schwerpunkte in Nord-Neukölln und entlang der Sonnenallee.</p>
+                    </div>
+                    
+                    <div class="bezirk-card">
+                        <h3>Friedrichshain</h3>
+                        <p><strong>Betroffene Wohnungen:</strong> 120</p>
+                        <p><strong>Kritischstes Auslaufen:</strong> 2027</p>
+                        <p>Große Wohnanlagen entlang der Karl-Marx-Allee betroffen.</p>
+                    </div>
+                    
+                    <div class="bezirk-card">
+                        <h3>Moabit</h3>
+                        <p><strong>Betroffene Wohnungen:</strong> 56</p>
+                        <p><strong>Kritischstes Auslaufen:</strong> 2025</p>
+                        <p>Konzentration im Bereich Turmstraße und Alt-Moabit.</p>
+                    </div>
+                    
+                    <div class="bezirk-card">
+                        <h3>Reinickendorf</h3>
+                        <p><strong>Betroffene Wohnungen:</strong> 92</p>
+                        <p><strong>Kritischstes Auslaufen:</strong> 2028</p>
+                        <p>Mehrere Großsiedlungen im nördlichen Stadtgebiet.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Hilfe -->
+        <div id="hilfe" class="tab-content">
+            <div class="info-section">
+                <h2>Was können Mieter*innen tun?</h2>
+                
+                <h3>1. Informieren Sie sich</h3>
+                <ul>
+                    <li>Prüfen Sie, ob Ihre Wohnung betroffen ist (nutzen Sie unsere Karte)</li>
+                    <li>Informieren Sie sich über Ihre Rechte</li>
+                    <li>Behalten Sie Fristen im Blick</li>
+                </ul>
+
+                <h3>2. Vernetzen Sie sich</h3>
+                <ul>
+                    <li>Sprechen Sie mit Ihren Nachbar*innen</li>
+                    <li>Gründen Sie eine Mieter*innengemeinschaft</li>
+                    <li>Kontaktieren Sie Initiativen in Ihrem Kiez</li>
+                </ul>
+
+                <h3>3. Holen Sie sich Beratung</h3>
+                <ul>
+                    <li>Berliner Mieterverein: <a href="https://www.berliner-mieterverein.de" target="_blank">www.berliner-mieterverein.de</a></li>
+                    <li>Mieterberatung Ihrer Bezirke</li>
+                    <li>Stadtteilzentren und Nachbarschaftshäuser</li>
+                </ul>
+
+                <h3>4. Werden Sie aktiv</h3>
+                <ul>
+                    <li>Fordern Sie politische Lösungen</li>
+                    <li>Beteiligen Sie sich an Protestaktionen</li>
+                    <li>Setzen Sie sich für den Erhalt von bezahlbarem Wohnraum ein</li>
+                </ul>
+            </div>
+
+            <div class="info-section">
+                <h2>Wichtige Beratungsstellen</h2>
+                <ul>
+                    <li><strong>Berliner Mieterverein</strong><br>
+                        Website: <a href="https://www.berliner-mieterverein.de" target="_blank">www.berliner-mieterverein.de</a><br>
+                        Tel: 030 / 226 260</li>
+                    
+                    <li><strong>Bezirkliche Mieterberatungen</strong><br>
+                        Kostenlose Beratung in jedem Berliner Bezirk</li>
+                    
+                    <li><strong>Stadtteilinitiativen</strong><br>
+                        Lokale Gruppen, die sich für Mieter*innenrechte einsetzen</li>
+                    
+                    <li><strong>Senatsverwaltung für Stadtentwicklung</strong><br>
+                        Informationen zu Wohnungspolitik und Förderungen</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tab: Kontakt -->
+        <div id="kontakt" class="tab-content">
+            <div class="info-section">
+                <h2>Kontaktieren Sie uns</h2>
+                <p>Haben Sie Fragen, Hinweise oder möchten Sie Daten zu weiteren Objekten beisteuern? Schreiben Sie uns!</p>
+                
+                <form class="contact-form" onsubmit="handleSubmit(event)">
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">E-Mail</label>
+                        <input type="email" id="email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="subject">Betreff</label>
+                        <input type="text" id="subject" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message">Nachricht</label>
+                        <textarea id="message" required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="submit-button">Nachricht senden</button>
+                </form>
+            </div>
+
+            <div class="info-section">
+                <h2>Daten beisteuern</h2>
+                <p>Sie kennen weitere Objekte mit auslaufenden Sozialbindungen? Helfen Sie uns, die Datenbank zu erweitern!</p>
+                <p>Wir benötigen folgende Informationen:</p>
+                <ul>
+                    <li>Adresse des Objekts</li>
+                    <li>Datum des Bindungsendes</li>
+                    <li>Name des Eigentümers</li>
+                    <li>Anzahl der betroffenen Wohnungen (falls bekannt)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Diese Webseite dient der Information über auslaufende Sozialbindungen in Berlin.</p>
+        <p>Letzte Aktualisierung: November 2025</p>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Tab-Funktionalität
+        function openTab(tabName) {
+            // Alle Tab-Inhalte ausblenden
+            const tabContents = document.getElementsByClassName('tab-content');
+            for (let content of tabContents) {
+                content.classList.remove('active');
+            }
+
+            // Alle Tab-Buttons deaktivieren
+            const tabButtons = document.getElementsByClassName('tab-button');
+            for (let button of tabButtons) {
+                button.classList.remove('active');
+            }
+
+            // Gewählten Tab anzeigen
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            // Karte neu initialisieren, wenn Karten-Tab geöffnet wird
+            if (tabName === 'karte' && map) {
+                setTimeout(() => map.invalidateSize(), 100);
+            }
+        }
+
+        // BEISPIELDATEN - Ersetzen Sie diese mit Ihren echten Daten
+        const housingData = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "adresse": "Müllerstraße 123",
+                        "bezirk": "Mitte",
+                        "bindungsende": "2025-12-31",
+                        "eigentuemer": "Deutsche Wohnen",
+                        "wohnungen": 45
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [13.3644, 52.5463]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "adresse": "Sonnenallee 456",
+                        "bezirk": "Neukölln",
+                        "bindungsende": "2026-06-30",
+                        "eigentuemer": "Vonovia",
+                        "wohnungen": 78
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [13.4644, 52.4775]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "adresse": "Karl-Marx-Allee 789",
+                        "bezirk": "Friedrichshain",
+                        "bindungsende": "2027-03-15",
+                        "eigentuemer": "Gewobag",
+                        "wohnungen": 120
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [13.4333, 52.5147]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "adresse": "Turmstraße 234",
+                        "bezirk": "Moabit",
+                        "bindungsende": "2025-09-30",
+                        "eigentuemer": "Stadt und Land",
+                        "wohnungen": 56
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [13.3400, 52.5280]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "adresse": "Residenzstraße 89",
+                        "bezirk": "Reinickendorf",
+                        "bindungsende": "2028-12-31",
+                        "eigentuemer": "Degewo",
+                        "wohnungen": 92
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [13.3284, 52.5694]
+                    }
+                }
+            ]
+        };
+
+        // Karte initialisieren
+        let map;
+        let markersLayer;
+        let allMarkers = [];
+
+        function initMap() {
+            map = L.map('map').setView([52.5200, 13.4050], 11);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+
+            markersLayer = L.layerGroup().addTo(map);
+            createMarkers(housingData);
+        }
+
+        // Funktion zum Erstellen von Markern
+        function createMarkers(data) {
+            markersLayer.clearLayers();
+            allMarkers = [];
+
+            data.features.forEach(feature => {
+                const props = feature.properties;
+                const coords = feature.geometry.coordinates;
+                
+                const marker = L.marker([coords[1], coords[0]])
+                    .bindPopup(`
+                        <h3>${props.adresse}</h3>
+                        <p><strong>Bezirk:</strong> ${props.bezirk}</p>
+                        <p><strong>Bindungsende:</strong> ${new Date(props.bindungsende).toLocaleDateString('de-DE')}</p>
+                        <p><strong>Eigentümer:</strong> ${props.eigentuemer}</p>
+                        <p><strong>Wohnungen:</strong> ${props.wohnungen}</p>
+                    `);
+                
+                marker.properties = props;
+                allMarkers.push(marker);
+                markersLayer.addLayer(marker);
+            });
+        }
+
+        // Statistiken aktualisieren
+        function updateStats(data) {
+            const totalUnits = data.features.reduce((sum, f) => sum + f.properties.wohnungen, 0);
+            const totalLocations = data.features.length;
+            const dates = data.features.map(f => new Date(f.properties.bindungsende));
+            const nextExpiry = new Date(Math.min(...dates)).getFullYear();
+
+            document.getElementById('total-units').textContent = totalUnits;
+            document.getElementById('total-locations').textContent = totalLocations;
+            document.getElementById('next-expiry').textContent = nextExpiry;
+        }
+
+        // Filter-Optionen füllen
+        function populateFilters(data) {
+            const years = new Set();
+            const owners = new Set();
+
+            data.features.forEach(feature => {
+                const year = new Date(feature.properties.bindungsende).getFullYear();
+                years.add(year);
+                owners.add(feature.properties.eigentuemer);
+            });
+
+            const yearFilter = document.getElementById('year-filter');
+            Array.from(years).sort().forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearFilter.appendChild(option);
+            });
+
+            const ownerFilter = document.getElementById('owner-filter');
+            Array.from(owners).sort().forEach(owner => {
+                const option = document.createElement('option');
+                option.value = owner;
+                option.textContent = owner;
+                ownerFilter.appendChild(option);
+            });
+        }
+
+        // Filter anwenden
+        function applyFilters() {
+            const yearFilter = document.getElementById('year-filter').value;
+            const ownerFilter = document.getElementById('owner-filter').value;
+
+            markersLayer.clearLayers();
+
+            allMarkers.forEach(marker => {
+                const props = marker.properties;
+                const year = new Date(props.bindungsende).getFullYear().toString();
+                
+                const yearMatch = yearFilter === 'all' || year === yearFilter;
+                const ownerMatch = ownerFilter === 'all' || props.eigentuemer === ownerFilter;
+
+                if (yearMatch && ownerMatch) {
+                    markersLayer.addLayer(marker);
+                }
+            });
+        }
+
+        // Filter zurücksetzen
+        function resetFilters() {
+            document.getElementById('year-filter').value = 'all';
+            document.getElementById('owner-filter').value = 'all';
+            applyFilters();
+        }
+
+        // Formular-Handler
+        function handleSubmit(event) {
+            event.preventDefault();
+            alert('Danke für Ihre Nachricht! In einer echten Implementierung würde diese jetzt versendet werden.');
+            event.target.reset();
+        }
+
+        // Event Listener
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+            updateStats(housingData);
+            populateFilters(housingData);
+            
+            document.getElementById('year-filter').addEventListener('change', applyFilters);
+            document.getElementById('owner-filter').addEventListener('change', applyFilters);
+        });
+    </script>
+</body>
+</html>
