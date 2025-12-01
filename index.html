@@ -240,6 +240,124 @@
             margin-bottom: 0.5rem;
         }
 
+        /* News Cards */
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .news-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .news-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .news-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .news-content {
+            padding: 1.5rem;
+        }
+
+        .news-date {
+            color: #667eea;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .news-card h3 {
+            color: #333;
+            margin-bottom: 0.75rem;
+            font-size: 1.3rem;
+        }
+
+        .news-excerpt {
+            color: #666;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .read-more {
+            display: inline-block;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .read-more:hover {
+            color: #5568d3;
+        }
+
+        .read-more::after {
+            content: " →";
+        }
+
+        .blog-link-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .blog-link-banner h3 {
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .blog-button {
+            display: inline-block;
+            background: white;
+            color: #667eea;
+            padding: 0.75rem 2rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .blog-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        /* Story Map Iframe */
+        .storymap-container {
+            width: 100%;
+            height: 800px;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .storymap-intro {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .storymap-intro p {
+            margin: 0.5rem 0;
+        }
+
         /* Contact Form */
         .contact-form {
             max-width: 600px;
@@ -340,8 +458,10 @@
         <!-- Tab Navigation -->
         <div class="tab-navigation">
             <button class="tab-button active" onclick="openTab('uebersicht')">Übersicht</button>
+            <button class="tab-button" onclick="openTab('storymap')">Die Zeit läuft</button>
             <button class="tab-button" onclick="openTab('karte')">Interaktive Karte</button>
             <button class="tab-button" onclick="openTab('bezirke')">Betroffene Bezirke</button>
+            <button class="tab-button" onclick="openTab('aktuelles')">Aktuelles</button>
             <button class="tab-button" onclick="openTab('hilfe')">Hilfe & Beratung</button>
             <button class="tab-button" onclick="openTab('kontakt')">Kontakt</button>
         </div>
@@ -379,6 +499,21 @@
                     <li>Verschärfung der Wohnungskrise in Berlin</li>
                 </ul>
             </div>
+        </div>
+
+        <!-- Tab: Story Map -->
+        <div id="storymap" class="tab-content">
+            <div class="storymap-intro">
+                <h2>Die Zeit läuft - Eine Story Map</h2>
+                <p>Entdecken Sie die Geschichte hinter den auslaufenden Sozialbindungen in Berlin. Diese interaktive Story Map zeigt, welche Kieze besonders betroffen sind und was das für die Menschen vor Ort bedeutet.</p>
+            </div>
+            
+            <iframe 
+                class="storymap-container" 
+                src="https://storymaps.arcgis.com/stories/9933487f99b4428ca22c16d474d19e59" 
+                allowfullscreen 
+                allow="geolocation">
+            </iframe>
         </div>
 
         <!-- Tab: Karte -->
@@ -448,6 +583,71 @@
                         <p>Mehrere Großsiedlungen im nördlichen Stadtgebiet.</p>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Tab: Aktuelles -->
+        <div id="aktuelles" class="tab-content">
+            <div class="info-section">
+                <h2>📰 Aktuelle News & Geschichten</h2>
+                <p>Hier finden Sie die neuesten Updates zu auslaufenden Sozialbindungen, Erfolgsgeschichten von Mieter*innen und aktuelle Entwicklungen.</p>
+                
+                <div class="news-grid">
+                    <!-- News Card 1 -->
+                    <div class="news-card">
+                        <div class="news-image"></div>
+                        <div class="news-content">
+                            <div class="news-date">📅 15. November 2025</div>
+                            <h3>Mieterbeirat Müllerstraße gegründet</h3>
+                            <p class="news-excerpt">
+                                45 Mieter*innen haben sich zusammengeschlossen, um gegen das Auslaufen der Sozialbindung zu kämpfen. Die Initiative fordert eine Verlängerung um mindestens 10 Jahre.
+                            </p>
+                            <a href="#" class="read-more" onclick="alert('Hier würde der Link zu Ihrem Blog führen'); return false;">Weiterlesen</a>
+                        </div>
+                    </div>
+
+                    <!-- News Card 2 -->
+                    <div class="news-card">
+                        <div class="news-image"></div>
+                        <div class="news-content">
+                            <div class="news-date">📅 10. November 2025</div>
+                            <h3>Erfolg in Neukölln: Bindung verlängert!</h3>
+                            <p class="news-excerpt">
+                                Durch den Druck der Mieter*inneninitiative konnte eine Verlängerung der Sozialbindung um 5 Jahre erreicht werden. Ein wichtiger Erfolg für 78 Haushalte.
+                            </p>
+                            <a href="#" class="read-more" onclick="alert('Hier würde der Link zu Ihrem Blog führen'); return false;">Weiterlesen</a>
+                        </div>
+                    </div>
+
+                    <!-- News Card 3 -->
+                    <div class="news-card">
+                        <div class="news-image"></div>
+                        <div class="news-content">
+                            <div class="news-date">📅 5. November 2025</div>
+                            <h3>Demo: "Bezahlbar bleibt bezahlbar!"</h3>
+                            <p class="news-excerpt">
+                                Über 500 Menschen demonstrierten am Alexanderplatz für den Erhalt von Sozialbindungen. Die Forderungen wurden dem Senat übergeben.
+                            </p>
+                            <a href="#" class="read-more" onclick="alert('Hier würde der Link zu Ihrem Blog führen'); return false;">Weiterlesen</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Link zum vollständigen Blog -->
+                <div class="blog-link-banner">
+                    <h3>Alle Updates ansehen</h3>
+                    <p>Besuchen Sie unseren Blog für ausführliche Berichte, Bildergalerien und Hintergrundgeschichten.</p>
+                    <a href="#" class="blog-button" onclick="alert('Hier würden Sie zu Ihrer Notion/Ghost-Seite weitergeleitet.\n\nBeispiel-URL:\n- Notion: notion.site/sozialbindungen\n- Ghost: sozialbindungen.ghost.io'); return false;">Zum Blog →</a>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h2>So bleiben Sie informiert</h2>
+                <ul>
+                    <li><strong>Newsletter:</strong> Melden Sie sich für unseren monatlichen Newsletter an</li>
+                    <li><strong>Social Media:</strong> Folgen Sie uns auf Instagram und Twitter</li>
+                    <li><strong>E-Mail-Benachrichtigungen:</strong> Erhalten Sie Alerts bei kritischen Entwicklungen in Ihrem Kiez</li>
+                </ul>
             </div>
         </div>
 
